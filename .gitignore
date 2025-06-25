@@ -1,0 +1,6 @@
+__pycache__
+.venv
+example
+notebook
+models
+datasets

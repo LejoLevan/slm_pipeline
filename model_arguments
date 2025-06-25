@@ -1,0 +1,25 @@
+"""model argument class
+"""
+from dataclasses import dataclass, field
+from typing import Optional
+
+@dataclass
+class model_arguments:
+    """class contains all relevant parameters related to what model is to be acted upon
+    """
+
+    model_name_or_path: str = field(
+        metadata={"help": "pretrained model system path or model identifer from huggingface"}
+    )
+    config_name: Optional[str] = field(
+        default=None,
+        metadata={"help": "pretrained config path if differs from model_name"}
+    )
+    tokenizer_name: Optional[str] = field(
+        default=None,
+        metadata={"help": "pretrained tokenizer path if differs from model_name"}
+    )
+    cache_dir: Optional[str] = field(
+        default=None,
+        metadata={"help": "where pretrained models from huggingface are stored"}
+    )

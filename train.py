@@ -1,5 +1,5 @@
 from transformers import AutoModelForQuestionAnswering, TrainingArguments, Trainer, default_data_collator
-from preprocess import preprocess
+from training_preprocess import preprocess
 from transformers import AutoTokenizer
 from peft import get_peft_model, LoraConfig, TaskType
 import torch.nn as nn

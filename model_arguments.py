@@ -14,7 +14,7 @@
 #
 # Changes made by Jonathan Le (2025):
 # - abstracted into it's own file
-# - reinterpretated metadeta information
+# - reinterpreted metadata information
 """model arguments class
 """
 from dataclasses import dataclass, field
@@ -26,7 +26,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        metadata={"help": "pretrained model system path or model identifer from huggingface"}
+        metadata={"help": "pretrained model system path or model identifier from huggingface"}
     )
     config_name: Optional[str] = field(
         default=None,

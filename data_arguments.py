@@ -14,7 +14,7 @@
 #
 # Changes made by Jonathan Le (2025):
 # - abstracted into it's own file
-# - reinterpretated metadeta information
+# - reinterpreted metadata information
 # - modified extension list (added parquet as valid extension)
 """data training arguments class
 """

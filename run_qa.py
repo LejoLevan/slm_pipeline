@@ -17,6 +17,8 @@
 # - refactored based on abstractions
 # - rewrote original comments for preferred readability and understanding
 # - repositioned certain logic/code (for example log logic)
+# - deleted sending telemetry
+# - integrated LoRA
 """
 Fine-tuning the library models for question answering using a slightly adapted version of the 🤗 Trainer.
 """
@@ -31,6 +33,7 @@ from typing import Optional
 
 import datasets
 import evaluate
+from peft import get_peft_model
 from datasets import load_dataset
 from trainer_qa import QuestionAnsweringTrainer
 from utils_qa import postprocess_qa_predictions
@@ -54,6 +57,7 @@ from transformers.utils.versions import require_version
 
 from model_arguments import ModelArguments
 from data_arguments import DataTrainingArguments
+from lora_arguments import LoraArguments
 
 from preprocess import preprocess
 from process import process
@@ -72,17 +76,13 @@ def main():
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments, LoraArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
-        model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
+        model_args, data_args, training_args, lora_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
-        model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-
-    # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
-    # information sent is the one passed as arguments along with your Python/PyTorch versions.
-    send_example_telemetry("run_qa", model_args, data_args)
+        model_args, data_args, training_args, lora_args = parser.parse_args_into_dataclasses()
 
     # Setup logging
     logging.basicConfig(
@@ -196,6 +196,11 @@ def main():
         token=model_args.token,
         trust_remote_code=model_args.trust_remote_code,
     )
+
+    lora_config = None
+    if lora_args.if_lora == True:
+        lora_config = lora_args.config()
+        model = get_peft_model(model, lora_config)
 
     # Tokenizer check: this script requires a fast tokenizer.
     if not isinstance(tokenizer, PreTrainedTokenizerFast):

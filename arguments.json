@@ -1,0 +1,27 @@
+{
+    "model_name_or_path": "models/bert-base-uncased",
+    "train_file": "infosys_instep_train.json",
+    "validation_file": "infosys_instep_val.json",
+    "test_file": "hartford_hub_dataset.json",
+
+    "if_lora": true,
+
+    "eval_strategy": "epoch",
+    "save_strategy": "epoch",
+    "save_total_limit": 3,
+    "learning_rate": 3e-5,
+    "per_device_train_batch_size": 16,
+    "per_device_eval_batch_size": 16,
+    "num_train_epochs": 8,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "do_train": true,
+    "do_eval": true,
+    "do_predict": true,
+    "load_best_model_at_end": true,
+    "metric_for_best_model": "eval_f1",
+    "version_2_with_negative": true,
+    "null_score_diff_threshold": 1.5,
+    "max_answer_length": 100,
+    "n_best_size": 20
+}

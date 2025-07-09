@@ -85,7 +85,7 @@ class DataTrainingArguments:
     null_score_diff_threshold: float = field(
         default=0.0,
         metadata={"help": "used in conjunction with 'version_2_with_negative=True'"
-        "if best answer has score lower than the score fo null answer minus threeshold, "
+        "if best answer has score lower than the score of null answer minus threeshold, "
         "null answer is selected"}
     )
     doc_stride: int = field(

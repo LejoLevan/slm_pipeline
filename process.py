@@ -18,7 +18,6 @@
 
 from trainer_qa import QuestionAnsweringTrainer
 
-import transformers
 from transformers import (
     DataCollatorWithPadding,
     default_data_collator,
@@ -93,7 +92,7 @@ class process:
             checkpoint = self.last_checkpoint
         train_result = self.trainer.train(resume_from_checkpoint=checkpoint)
         self.trainer.save_model()  # Saves the tokenizer too for easy upload
-
+        
         metrics = train_result.metrics
         max_train_samples = (
             self.data_args.max_train_samples if self.data_args.max_train_samples is not None else len(self.train_dataset)

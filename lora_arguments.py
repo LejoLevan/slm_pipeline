@@ -7,13 +7,13 @@ from peft import LoraConfig, TaskType
 class LoraArguments:
     """class contains all relevant parameters related to LoRA
     """
-
+    model_name: Optional[str] = field(
+        default=None,
+        metadata={"help": "pretrained model system path or model identifier from huggingface"}
+    )
     if_lora: bool = field(
         default=False,
         metadata={"help": "whether or not LoRA is used in training"}
-    )
-    model_name_or_path: str = field(
-        metadata={"help": "pretrained model system path or model identifier from huggingface"}
     )
     r: int = field(
         default=8,
@@ -40,12 +40,12 @@ class LoraArguments:
         metadata={"help": "set to True for models with transposed weights (e.g., GPT-style)"}
     )
     task_type: str = field(
-        default="QUESTION_ANSWERING",
+        default="QUESTION_ANS",
         metadata={"help": "task type for PEFT"}
     )
 
     def guess_targets(self) -> Optional[List[str]]:
-        name = self.model_name_or_path.lower()
+        name = self.model_name.lower()
         if "bert" in name or "roberta" in name:
             return ["query", "key", "value"]
         if "deberta" in name:
@@ -60,7 +60,8 @@ class LoraArguments:
             return ["q", "v"]
         return None
     
-    def config(self) -> Optional[LoraConfig]:
+    def config(self, model) -> Optional[LoraConfig]:
+        self.model_name = model
         targets = self.target_modules or self.guess_targets()
         if not targets:
             raise ValueError("--LoRA config requires target modules")

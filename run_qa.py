@@ -27,32 +27,23 @@ Fine-tuning the library models for question answering using a slightly adapted v
 import logging
 import os
 import sys
-import warnings
-from dataclasses import dataclass, field
-from typing import Optional
 
 import datasets
-import evaluate
-from peft import get_peft_model
+from peft import get_peft_model, AutoPeftModelForQuestionAnswering, PeftModel
 from datasets import load_dataset
-from trainer_qa import QuestionAnsweringTrainer
-from utils_qa import postprocess_qa_predictions
 
 import transformers
 from transformers import (
     AutoConfig,
     AutoModelForQuestionAnswering,
     AutoTokenizer,
-    DataCollatorWithPadding,
-    EvalPrediction,
     HfArgumentParser,
     PreTrainedTokenizerFast,
     TrainingArguments,
-    default_data_collator,
     set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint
-from transformers.utils import check_min_version, send_example_telemetry
+from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
 from model_arguments import ModelArguments
@@ -109,6 +100,10 @@ def main():
     )
     logger.info(f"Training/evaluation parameters {training_args}")
 
+    model_name = model_args.model_name_or_path.split('/')[-1]
+    training_args.output_dir = os.path.join("output", model_name)
+    training_args.logging_dir = os.path.join("logs", model_name)
+
     # Detecting last checkpoint.
     last_checkpoint = None
     if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
@@ -142,8 +137,6 @@ def main():
             data_args.dataset_name,
             data_args.dataset_config_name,
             cache_dir=model_args.cache_dir,
-            token=model_args.token,
-            trust_remote_code=model_args.trust_remote_code,
         )
     else:
         data_files = {}
@@ -160,10 +153,9 @@ def main():
         raw_datasets = load_dataset(
             extension,
             data_files=data_files,
-            field="data",
             cache_dir=model_args.cache_dir,
-            token=model_args.token,
         )
+
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
     # https://huggingface.co/docs/datasets/loading_datasets.
 
@@ -175,32 +167,28 @@ def main():
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        token=model_args.token,
-        trust_remote_code=model_args.trust_remote_code,
     )
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
         use_fast=True,
-        revision=model_args.model_revision,
-        token=model_args.token,
-        trust_remote_code=model_args.trust_remote_code,
     )
     model = AutoModelForQuestionAnswering.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
         cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        token=model_args.token,
-        trust_remote_code=model_args.trust_remote_code,
     )
 
     lora_config = None
     if lora_args.if_lora == True:
-        lora_config = lora_args.config()
-        model = get_peft_model(model, lora_config)
+        if last_checkpoint is not None:
+            model = PeftModel.from_pretrained(model, last_checkpoint, is_trainable=True)
+            model.print_trainable_parameters()
+        else:
+            lora_config = lora_args.config(model_args.model_name_or_path)
+            model = get_peft_model(model, lora_config)
+            #model.print_trainable_parameters()
 
     # Tokenizer check: this script requires a fast tokenizer.
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
@@ -286,12 +274,6 @@ def main():
         trainer.push_to_hub(**kwargs)
     else:
         trainer.create_model_card(**kwargs)
-
-
-def _mp_fn(index):
-    # For xla_spawn (TPUs)
-    main()
-
 
 if __name__ == "__main__":
     main()

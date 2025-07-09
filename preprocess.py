@@ -68,9 +68,6 @@ class preprocess:
 
         self.predict_dataset = None
         self.predict_examples = None
-
-        self.training_preprocess()
-        self.validation_test_preprocess()
     
     def _prepare_train_features(self, examples):
         # Some of the questions have lots of whitespace on the left, which is not useful and will make the
@@ -165,7 +162,7 @@ class preprocess:
         # Create train feature from dataset
         with self.training_args.main_process_first(desc="train dataset map pre-processing"):
             self.train_dataset = self.train_dataset.map(
-                self.prepare_train_features,
+                self._prepare_train_features,
                 batched=True,
                 num_proc=self.data_args.preprocessing_num_workers,
                 remove_columns=self.column_names,
@@ -234,7 +231,7 @@ class preprocess:
         # Validation Feature Creation
         with self.training_args.main_process_first(desc="validation dataset map pre-processing"):
             self.eval_dataset = self.eval_examples.map(
-                self.prepare_validation_features,
+                self._prepare_validation_predict_features,
                 batched=True,
                 num_proc=self.data_args.preprocessing_num_workers,
                 remove_columns=self.column_names,
@@ -256,7 +253,7 @@ class preprocess:
         # Predict Feature Creation
         with self.training_args.main_process_first(desc="prediction dataset map pre-processing"):
             self.predict_dataset = self.predict_examples.map(
-                self.prepare_validation_features,
+                self._prepare_validation_predict_features,
                 batched=True,
                 num_proc=self.data_args.preprocessing_num_workers,
                 remove_columns=self.column_names,
@@ -278,9 +275,7 @@ class preprocess:
     def get_predict_examples(self):
         return self.predict_examples
     def get_eval_examples(self):
-        return self.eval_examples()
+        return self.eval_examples
     
     def get_answer_column_name(self):
         return self.answer_column_name
-    
-    #define rest of getter methods later

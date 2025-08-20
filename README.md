@@ -3,11 +3,9 @@
 This is a pipeline to be used in producing **domain specific extractive QA SLMs** trained off datasets that follow the **SQuAD dataset format**. 
 It is abstracted into a **main** funciton that uses three distinct classes: **preprocess, process, and postprocess**.
 
-Besides the relevant pipeline code, the repository contains files relevant for demonstration. It contains a base bert model along with a
-trained version of the model that was trained using the pipeline and datasets generated from mock_dataset.py. The file QA_predict.py compares the predictions
-of the two models to demonstrate the effectievness of training. 
+Besides the relevant pipeline code, the repository contains files relevant for demonstration. 
 
-There is also a requirements.txt that can be used to easily download relevant imports to python virtual enviroment.
+There is also a requirements.txt that can be used to easily download relevant imports to python virtual environment.
 
 ## Main
 The main function is named run_QA.py and is the master function that use the aforementioned classes. It begins by using HuggingFace's API to 
@@ -24,7 +22,7 @@ which most relevant models will contain.
 There is also logic for logging defined in the main function.
 
 ### Preprocess
-Preprocessing is the stage that focuses on preparing the dataset for training. Here data is briefly cleaned before then being ran through the tokenizer to produce examples that are then 
+Preprocess is the stage that focuses on preparing the dataset for training. Here data is briefly cleaned before then being ran through the tokenizer to produce examples that are then 
 labeled in relation to where the given answer is in within the given context. The dataset must be tokenzied as the model understands tokens rather than raw data when training.
 
 Datasets must follow SQuAD format where an entry may look like:
@@ -48,7 +46,7 @@ Data Arugments determine whether or not train, validation, and/or test examples 
 Basic getter methods are also defined.
 
 ### Process
-Process is the stage where the pipeline trains/finetunes the model on the generated exampls from Preprocess, using Training Arguments to initialize the trainer. It uses HuggingFace's API
+Process is the stage where the pipeline trains/finetunes the model on the generated examples from Preprocess, using Training Arguments to initialize the trainer. It uses HuggingFace's API
 to train from scratch or checkpoint if it was previously detected. It also, while training, will output log information onto the console depending Training Arguments that can be used to
 evaluate how well training is going. The class uses methods defined in Post Process to achieve this evaulation/metric logging.
 
